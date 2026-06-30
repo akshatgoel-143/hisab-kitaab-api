@@ -1,9 +1,8 @@
 from fastapi import FastAPI
-
 from app.database.database import engine
 from app.database.base import Base
-
 from app.routers.auth import router
+from app.core.exception_handler import register_exception_handlers
 
 import app.models
 
@@ -14,6 +13,8 @@ app = FastAPI(
     description="Expense Tracking Backend API",
     version="1.0.0"
 )
+
+register_exception_handlers(app)
 
 @app.get("/")
 def home():

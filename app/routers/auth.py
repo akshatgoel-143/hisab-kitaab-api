@@ -6,6 +6,7 @@ from app.models.user import User
 from app.schemas.user import UserRegister, UserLogin
 from app.core.security import hash_password, verify_password
 from app.core.auth import create_access_token
+from app.core.response import success_response
 
 router = APIRouter(
     prefix="/auth",
@@ -39,10 +40,15 @@ def register(user: UserRegister, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
 
-    return {
-        "message": "New User Registered Successfully",
-        "user_id": new_user.id
-    }
+    return success_response(
+        message="User registered successfully",
+        status_code=201,
+        data={
+            "user_id": new_user.id,
+            "name": new_user.name,
+            "email": new_user.email
+        }
+    )
 
 
 @router.post("/login")
@@ -66,7 +72,11 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
         {"sub": db_user.email}
     )
 
-    return {
-        "access_token": token,
-        "token_type": "bearer"
-    }
+    return success_response(
+        message="Login successful",
+        data={
+            "user_id": db_user.id,
+            "access_token": token,
+            "token_type": "Bearer"
+        }
+    )
