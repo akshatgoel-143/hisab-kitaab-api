@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
-from sqlalchemy.orm import session
+from sqlalchemy.orm import Session
 from app.database.database import get_db
 from app.models.user import User
 from app.schemas.user import UserRegister, UserLogin
@@ -12,11 +12,13 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.get("/test")
 def test():
-    return {"message": "Auth Router Working"}
+    return {
+        "message": "Auth Router Working"
+    }
 
 
 @router.post("/register")
-def register(user: UserRegister, db: session = Depends(get_db)):
+def register(user: UserRegister, db: Session = Depends(get_db)):
 
     existing_user = db.scalar(select(User).where(User.email == user.email))
 
@@ -25,7 +27,11 @@ def register(user: UserRegister, db: session = Depends(get_db)):
 
     hashed_password = hash_password(user.password)
 
-    new_user = User(name=user.name, email=user.email, password=user.hashed_password)
+    new_user = User(
+        name=user.name,
+        email=user.email,
+        password=hashed_password
+    )
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
@@ -34,7 +40,7 @@ def register(user: UserRegister, db: session = Depends(get_db)):
 
 
 @router.post("/login")
-def login(user: UserLogin, db: session = Depends(get_db)):
+def login(user: UserLogin, db: Session = Depends(get_db)):
 
     db_user = db.scalar(select(User).where(User.email == user.email))
 
