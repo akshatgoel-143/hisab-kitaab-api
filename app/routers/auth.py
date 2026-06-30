@@ -28,3 +28,7 @@ def register(user: UserRegister, db: session = Depends(get_db)):
         "message":"New User Registered Successfully",
         "user_id": new_user.id
     }   
+    
+@router.post("/login")
+def login(user: UserRegister, db: session = Depends(get_db)):
+    pass
