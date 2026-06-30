@@ -7,7 +7,10 @@ from app.schemas.user import UserRegister, UserLogin
 from app.core.security import hash_password, verify_password
 from app.core.auth import create_access_token
 
-router = APIRouter(prefix="/auth", tags=["Authentication"])
+router = APIRouter(
+    prefix="/auth",
+    tags=["Authentication"]
+)
 
 
 @router.get("/test")
@@ -36,7 +39,10 @@ def register(user: UserRegister, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
 
-    return {"message": "New User Registered Successfully", "user_id": new_user.id}
+    return {
+        "message": "New User Registered Successfully",
+        "user_id": new_user.id
+    }
 
 
 @router.post("/login")
@@ -45,11 +51,22 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
     db_user = db.scalar(select(User).where(User.email == user.email))
 
     if not db_user:
-        raise HTTPException(status_code=401, detail="Invalid Email or Password")
+        raise HTTPException(
+        status_code=401,
+        detail="Invalid Email or Password"
+    )
 
     if not verify_password(user.password, db_user.password):
-        raise HTTPException(status_code=401, detail="Invalid Email or Password")
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid Email or Password"
+        )
 
-    token = create_access_token({"sub": db_user.email})
+    token = create_access_token(
+        {"sub": db_user.email}
+    )
 
-    return {"access_token": token, "token_type": "bearer"}
+    return {
+        "access_token": token,
+        "token_type": "bearer"
+    }
