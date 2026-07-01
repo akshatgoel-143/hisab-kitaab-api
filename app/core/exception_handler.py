@@ -13,11 +13,13 @@ def register_exception_handlers(app: FastAPI):
     ):
         first_error = exc.errors()[0]
 
+        field_name = first_error["loc"][-1]
+
         return JSONResponse(
             status_code=422,
             content={
                 "status": False,
-                "message": first_error
+                "message": f"{field_name}: {first_error['msg']}"
             }
         )
 

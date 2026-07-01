@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from app.database.database import get_db
@@ -52,17 +53,25 @@ def register(user: UserRegister, db: Session = Depends(get_db)):
 
 
 @router.post("/login")
-def login(user: UserLogin, db: Session = Depends(get_db)):
+def login(
+    user: UserLogin,
+    db: Session = Depends(get_db)
+):
 
-    db_user = db.scalar(select(User).where(User.email == user.email))
+    db_user = db.scalar(
+        select(User).where(User.email == user.email)
+    )
 
     if not db_user:
         raise HTTPException(
-        status_code=401,
-        detail="Invalid Email or Password"
-    )
+            status_code=401,
+            detail="Invalid Email or Password"
+        )
 
-    if not verify_password(user.password, db_user.password):
+    if not verify_password(
+        user.password,
+        db_user.password
+    ):
         raise HTTPException(
             status_code=401,
             detail="Invalid Email or Password"
@@ -80,3 +89,40 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
             "token_type": "Bearer"
         }
     )
+    
+
+@router.post("/token")
+def token(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db)
+):
+
+    db_user = db.scalar(
+        select(User).where(
+            User.email == form_data.username
+        )
+    )
+
+    if not db_user:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid Email or Password"
+        )
+
+    if not verify_password(
+        form_data.password,
+        db_user.password
+    ):
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid Email or Password"
+        )
+
+    access_token = create_access_token(
+        {"sub": db_user.email}
+    )
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer"
+    }
